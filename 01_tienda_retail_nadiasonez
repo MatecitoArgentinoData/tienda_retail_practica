@@ -1,0 +1,116 @@
+---------------------------------------------------------
+-- CREACIÓN DE TABLAS: clientes, productos y ventas.
+-- DDL – Estructura de tablas
+---------------------------------------------------------
+
+CREATE DATABASE tienda_retail;
+
+-- creamos la tabla clientes
+DROP TABLE IF EXISTS clientes;
+CREATE TABLE clientes (
+	id_cliente SERIAL PRIMARY KEY,
+	nombre VARCHAR(100) NOT NULL,
+	apellido VARCHAR(100) NOT NULL,
+	edad INT CHECK (edad >= 18) NOT NULL,
+	dni INT NOT NULL UNIQUE,
+	ciudad VARCHAR(100) NOT NULL,
+	mail VARCHAR(100) NOT NULL UNIQUE
+);
+
+-- creamos la tabla productos
+DROP TABLE IF EXISTS productos;
+CREATE TABLE productos (
+	id_producto SERIAL PRIMARY KEY,
+	nombre_producto VARCHAR(100) NOT NULL,
+	precio_producto DECIMAL (10,2) CHECK (precio_producto > 0) -- checkeamos que el precio sea mayor que cero.
+);
+
+-- creamos la tabla ventas
+DROP TABLE IF EXISTS ventas;
+CREATE TABLE ventas (
+	id_venta SERIAL PRIMARY KEY,
+	fecha_compra DATE DEFAULT CURRENT_DATE,
+	cliente_id INT REFERENCES clientes(id_cliente), -- Creamos una FK para "conectar" con la tabla clientes.
+	producto_vendido INT REFERENCES productos(id_producto), -- Creamos una FK para "conectar" con la tabla productos
+	cantidad INT CHECK (cantidad > 0)  -- checkeamos que la cantidad sea mayor que 0.
+);
+
+---------------------------------------------------------
+-- INSERCIÓN DE DATOS
+-- DML – Datos y mantenimiento
+---------------------------------------------------------
+
+BEGIN;
+
+-- Insertamos datos en la tabla clientes:
+INSERT INTO clientes (nombre, apellido, edad, dni, ciudad, mail)
+	VALUES 
+			('Diego', 'Ansuini', '36', '35091969', 'Mendoza', 'diegoansu@gmail.com'),
+			('Naomi', 'Soñez', '23', '40155123', 'Mendoza', 'naosonez@gmail.com'),
+			('Viviana', 'Grattier', '56', '21156489', 'Mendoza', 'vivigrattier@gmail.com'),
+			('Nadia', 'Grattier', '34', '36655691', 'Bariloche', 'nadiasonez@gmail.com'),
+			('Efrain', 'Grattier', '33', '38556152', 'Neuquén', 'efragra@gmail.com'),
+			('Carol', 'Mendoza', '29', '35091965', 'Neuquén', 'carolmendo@gmail.com');
+
+-- Corroboramos que la inserción de haya hecho de forma correcta:
+SELECT *
+FROM clientes;
+
+-- Insertamos datos en la tabla productos:
+INSERT INTO productos (nombre_producto, precio_producto)
+	VALUES 
+			('Pino de Navidad - 1m', '15999.99'),
+			('Luces de Navidad - 5,5m', '20999.99'),
+			('Bolas rojas x 10unidades - DECO NAVIDAD', '10500'),
+			('Bolas azules x 10unidades - DECO NAVIDAD', '10500'),
+			('Bolas doradas x 10unidades - DECO NAVIDAD', '10500'),
+			('Cinta motivos navideños', '5999.99');
+			
+-- Corroboramos que la inserción de haya hecho de forma correcta:
+SELECT *
+FROM productos;
+
+-- Insertamos datos en la tabla productos:
+
+INSERT INTO ventas (fecha_compra, cliente_id, producto_vendido, cantidad)
+	VALUES
+			('2025-11-25', '7', '5', '2'),
+			('2025-11-26', '8', '1', '1'),
+			('2025-11-28', '9', '6', '5'),
+			('2025-11-30', '10', '6', '10'),
+			('2025-12-08', '11', '5', '5'),
+			('2025-12-10', '12', '2', '2'),
+			('2025-12-15', '10', '5', '2');
+			
+-- Corroboramos que la inserción de haya hecho de forma correcta:
+SELECT *
+FROM ventas;
+
+---------------------------------------------------------
+-- USO DE UPDATE Y DELETE
+---------------------------------------------------------
+
+-- Actualizamos el mail de un clientes (USO DEL UPDATE)
+
+UPDATE clientes
+SET mail = 'diegoansuini@gmail'
+WHERE id_cliente = 7;
+
+-- Corroboramos que se haya hecho la actualización correctamente
+
+SELECT *
+FROM clientes;
+
+-- Eliminamos ahora un registro (USO DEL DELETE)
+DELETE FROM clientes
+WHERE id_cliente = 10; 
+-- En este caso nos arrojará error porque el cliente con id 10 tiene una compra registrada en la tabla ventas.  
+-- Probemos entonces en eliminar un registro de venta. 
+DELETE FROM ventas
+WHERE id_venta = 15; 
+-- ¡Si se ejecutó! Corroboremos con un SELECT
+SELECT*
+FROM ventas; -- Visualizamos que efectivamente la venta n°15 se ha eliminado.
+
+
+COMMIT;
